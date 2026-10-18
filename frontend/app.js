@@ -20,20 +20,23 @@ async function checkSystem() {
         const data = await response.json();
 
         connectionLabel.textContent = "Backend terhubung";
+
         systemStatus.textContent =
             `${data.application} v${data.version} · Online`;
 
         statusDot.classList.add("online");
     } catch (error) {
-        connectionLabel.textContent = "Backend tidak tersedia";
-        systemStatus.textContent = "Backend connection failed";
+        connectionLabel.textContent =
+            "Backend tidak tersedia";
+
+        systemStatus.textContent =
+            "Backend connection failed";
 
         statusDot.classList.remove("online");
 
         console.error("LYRA health check error:", error);
     }
 }
-
 
 async function loadEngines() {
     try {
@@ -51,7 +54,6 @@ async function loadEngines() {
     }
 }
 
-
 function setupEngineButtons() {
     document
         .querySelectorAll("[data-engine]")
@@ -61,14 +63,12 @@ function setupEngineButtons() {
 
                 alert(
                     `${engine.toUpperCase()} ENGINE\n\n` +
-                    "Modul ini belum terhubung. " +
-                    "Integrasi dan pengujian akan dilakukan " +
-                    "pada tahap berikutnya."
+                    "Mesin ini belum terintegrasi. " +
+                    "Integrasi akan dilakukan pada tahap berikutnya."
                 );
             });
         });
 }
-
 
 document.addEventListener("DOMContentLoaded", () => {
     checkSystem();
