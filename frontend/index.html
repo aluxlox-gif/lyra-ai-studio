@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="LYRA AI STUDIO: image, video, and voice production."
+    >
+
+    <title>LYRA AI STUDIO</title>
+
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+
+<body>
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">L</div>
+
+            <div>
+                <h1>LYRA</h1>
+                <p>AI STUDIO</p>
+            </div>
+        </div>
+
+        <div class="sidebar-label">WORKSPACE</div>
+
+        <nav class="navigation">
+            <a class="nav-item active" href="#dashboard">
+                <span>◈</span> Dashboard
+            </a>
+
+            <a class="nav-item" href="#image">
+                <span>▧</span> Image Studio
+            </a>
+
+            <a class="nav-item" href="#video">
+                <span>▶</span> Video Studio
+            </a>
+
+            <a class="nav-item" href="#voice">
+                <span>♫</span> Voice Studio
+            </a>
+
+            <a class="nav-item" href="#projects">
+                <span>▤</span> Projects
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="status-dot"></div>
+            <span id="connection-label">Memeriksa sistem...</span>
+        </div>
+    </aside>
+
+    <main class="main-content" id="dashboard">
+        <header class="topbar">
+            <div>
+                <p class="eyebrow">CREATIVE WORKSPACE</p>
+                <h2>Dashboard</h2>
+            </div>
+
+            <div class="version-badge">
+                VERSION 0.1.0
+            </div>
+        </header>
+
+        <section class="hero">
+            <div class="hero-content">
+                <p class="eyebrow">YOUR CREATIVE AI WORKSPACE</p>
+
+                <h2>
+                    Imagine it.<br>
+                    <span>Create it with LYRA.</span>
+                </h2>
+
+                <p class="hero-description">
+                    Satu workspace untuk merencanakan dan
+                    mengembangkan proyek gambar, video,
+                    serta suara berbasis AI.
+                </p>
+
+                <a class="primary-button" href="#engines">
+                    Jelajahi Studio <span>→</span>
+                </a>
+            </div>
+
+            <div class="hero-symbol" aria-hidden="true">
+                <div class="symbol-ring ring-one"></div>
+                <div class="symbol-ring ring-two"></div>
+                <div class="symbol-core">L</div>
+            </div>
+        </section>
+
+        <section class="section" id="engines">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">YOUR CREATIVE TOOLS</p>
+                    <h2>Studio Engines</h2>
+                </div>
+
+                <span class="section-caption">
+                    Modular architecture
+                </span>
+            </div>
+
+            <div class="engine-grid">
+                <article class="engine-card" id="image">
+                    <div class="engine-icon image-icon">▧</div>
+
+                    <div class="engine-status planned">
+                        PLANNED
+                    </div>
+
+                    <h3>Image Studio</h3>
+
+                    <p>
+                        Pembuatan gambar, character sheet,
+                        visual referensi, dan storyboard.
+                    </p>
+
+                    <button
+                        class="secondary-button"
+                        type="button"
+                        data-engine="image"
+                    >
+                        Detail Engine →
+                    </button>
+                </article>
+
+                <article class="engine-card" id="video">
+                    <div class="engine-icon video-icon">▶</div>
+
+                    <div class="engine-status planned">
+                        PLANNED
+                    </div>
+
+                    <h3>Video Studio</h3>
+
+                    <p>
+                        Perencanaan adegan, pengelolaan aset,
+                        kontinuitas, dan komposisi video.
+                    </p>
+
+                    <button
+                        class="secondary-button"
+                        type="button"
+                        data-engine="video"
+                    >
+                        Detail Engine →
+                    </button>
+                </article>
+
+                <article class="engine-card" id="voice">
+                    <div class="engine-icon voice-icon">♫</div>
+
+                    <div class="engine-status planned">
+                        PLANNED
+                    </div>
+
+                    <h3>Voice Studio</h3>
+
+                    <p>
+                        Ruang kerja untuk sintesis suara
+                        dan fitur audio yang didukung.
+                    </p>
+
+                    <button
+                        class="secondary-button"
+                        type="button"
+                        data-engine="voice"
+                    >
+                        Detail Engine →
+                    </button>
+                </article>
+            </div>
+        </section>
+
+        <section class="section project-section" id="projects">
+            <div>
+                <p class="eyebrow">PROJECT MANAGEMENT</p>
+                <h2>Your Creative Projects</h2>
+
+                <p class="muted-text">
+                    Pengelolaan proyek dan aset bersama
+                    akan ditambahkan pada tahap berikutnya.
+                </p>
+            </div>
+
+            <div class="project-placeholder">
+                <div class="placeholder-icon">＋</div>
+
+                <h3>Workspace is being prepared</h3>
+
+                <p>
+                    Fitur pembuatan dan penyimpanan proyek
+                    belum diaktifkan.
+                </p>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <span>LYRA AI STUDIO</span>
+            <span id="system-status">Initializing...</span>
+        </footer>
+    </main>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
