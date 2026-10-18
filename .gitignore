@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+.eggs/
+venv/
+.venv/
+env/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Test and coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Editors
+.vscode/
+.idea/
+
+# Operating system
+.DS_Store
+Thumbs.db
+
+# Generated files
+outputs/
+temp/
+cache/
+logs/
+
+# AI models and large files
+models/
+checkpoints/
+*.safetensors
+*.ckpt
+*.pth
+*.pt
+*.onnx
+
+# Local databases
+*.db
+*.sqlite3
