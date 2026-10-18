@@ -1,5 +1,9 @@
-from pathlib import Path
-
+from app.engines.registry import (
+    get_engine,
+    get_engine_status,
+    list_engines,
+)
+from pathlib import from
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -66,41 +70,40 @@ async def health_check():
 
 
 # --------------------------------------------------
-# ENGINE REGISTRY
+# ENGINE MANAGER API
 # --------------------------------------------------
 
 @app.get("/api/engines", tags=["Engines"])
-async def list_engines():
+async def api_list_engines():
     return {
-        "engines": [
-            {
-                "id": "image",
-                "name": "Image Engine",
-                "status": "planned",
-                "description": (
-                    "Image generation, editing, "
-                    "character sheets, and storyboards."
-                ),
-            },
-            {
-                "id": "voice",
-                "name": "Voice Engine",
-                "status": "planned",
-                "description": (
-                    "Voice generation and supported "
-                    "audio processing workflows."
-                ),
-            },
-            {
-                "id": "video",
-                "name": "Video Engine",
-                "status": "planned",
-                "description": (
-                    "Scene planning, asset continuity, "
-                    "and video production workflows."
-                ),
-            },
-        ]
+        "success": True,
+        "engines": list_engines(),
+    }
+
+
+@app.get("/api/engines/status", tags=["Engines"])
+async def api_engine_status():
+    return {
+        "success": True,
+        "status": get_engine_status(),
+    }
+
+
+@app.get("/api/engines/{engine_id}", tags=["Engines"])
+async def api_get_engine(engine_id: str):
+    engine = get_engine(engine_id)
+
+    if engine is None:
+        from fastapi import HTTPException
+
+        raise HTTPException(
+            status_code=404,
+            detail=f"Engine '{engine_id}' tidak ditemukan.",
+        )
+
+    return {
+        "success": True,
+        "engine": engine,
     }
 
 
