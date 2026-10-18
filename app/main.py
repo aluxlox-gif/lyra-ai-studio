@@ -1,17 +1,22 @@
+"""
+LYRA AI STUDIO
+Main FastAPI application.
+"""
+
+from pathlib import Path
+
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+
 from app.engines.registry import (
     get_engine,
     get_engine_status,
     list_engines,
 )
-from pathlib import from
-from fastapi import FastAPI
-from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
 
 
-# --------------------------------------------------
 # APPLICATION CONFIGURATION
-# --------------------------------------------------
 
 APP_NAME = "LYRA AI STUDIO"
 APP_VERSION = "0.1.0"
@@ -29,9 +34,7 @@ app = FastAPI(
 )
 
 
-# --------------------------------------------------
 # FRONTEND
-# --------------------------------------------------
 
 if FRONTEND_DIR.is_dir():
     app.mount(
@@ -46,7 +49,7 @@ async def home():
     index_file = FRONTEND_DIR / "index.html"
 
     if index_file.is_file():
-        return FileResponse(index_file)
+        return FileResponse(str(index_file))
 
     return {
         "application": APP_NAME,
@@ -55,9 +58,7 @@ async def home():
     }
 
 
-# --------------------------------------------------
-# HEALTH CHECK
-# --------------------------------------------------
+# SYSTEM HEALTH
 
 @app.get("/api/health", tags=["System"])
 async def health_check():
@@ -69,9 +70,33 @@ async def health_check():
     }
 
 
-# --------------------------------------------------
-# ENGINE MANAGER API
-# --------------------------------------------------
+# APPLICATION INFORMATION
+
+@app.get("/api/info", tags=["System"])
+async def application_info():
+    return {
+        "success": True,
+        "application": APP_NAME,
+        "version": APP_VERSION,
+        "architecture": "modular",
+        "integrations": {
+            "voicebox": {
+                "provider": "Voicebox",
+                "status": "planned",
+            },
+            "openmontage": {
+                "provider": "OpenMontage",
+                "status": "planned",
+            },
+            "image_engine": {
+                "provider": None,
+                "status": "planned",
+            },
+        },
+    }
+
+
+# ENGINE MANAGER
 
 @app.get("/api/engines", tags=["Engines"])
 async def api_list_engines():
@@ -81,46 +106,5 @@ async def api_list_engines():
     }
 
 
-@app.get("/api/engines/status", tags=["Engines"])
-async def api_engine_status():
-    return {
-        "success": True,
-        "status": get_engine_status(),
-    }
-
-
-@app.get("/api/engines/{engine_id}", tags=["Engines"])
-async def api_get_engine(engine_id: str):
-    engine = get_engine(engine_id)
-
-    if engine is None:
-        from fastapi import HTTPException
-
-        raise HTTPException(
-            status_code=404,
-            detail=f"Engine '{engine_id}' tidak ditemukan.",
-        )
-
-    return {
-        "success": True,
-        "engine": engine,
-    }
-
-
-# --------------------------------------------------
-# SYSTEM INFORMATION
-# --------------------------------------------------
-
-@app.get("/api/info", tags=["System"])
-async def application_info():
-    return {
-        "name": APP_NAME,
-        "version": APP_VERSION,
-        "architecture": "modular",
-        "engines": ["image", "voice", "video"],
-        "integrations": {
-            "voicebox": "not_connected",
-            "openmontage": "not_connected",
-            "image_engine": "not_connected",
-        },
+@app.get("/api      },
     }
