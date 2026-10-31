@@ -9,6 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
 from app.engines.registry import get_engine_status
+from app.engines.adapters.hermes import HermesAdapter
 
 APP_NAME = "LYRA AI STUDIO"
 APP_VERSION = "1.0.0"
@@ -106,7 +107,11 @@ async def voicebox_health():
             "connected": False,
             "message": "Voicebox is unreachable"
         }
-
+        
+@app.get("/api/agents/hermes/health")
+async def hermes_health():
+    adapter = HermesAdapter()
+    return await adapter.health_check()
 
 @app.get("/api/status")
 async def status():
