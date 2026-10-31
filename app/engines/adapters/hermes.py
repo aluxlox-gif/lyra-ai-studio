@@ -1,3 +1,4 @@
+
 """
 Hermes Agent adapter for LYRA AI STUDIO.
 """
@@ -27,14 +28,17 @@ class HermesAdapter(BaseEngineAdapter):
             os.getenv("HERMES_API_KEY", "")
         )
 
+        self.model = self.config.get(
+            "model",
+            os.getenv("HERMES_MODEL", "hermes-agent")
+        )
+
         self.health_path = self.config.get(
             "health_path",
             os.getenv("HERMES_HEALTH_PATH", "/health")
         )
 
-        self.timeout = float(
-            self.config.get("timeout", 10.0)
-        )
+        self.timeout = float(self.config.get("timeout", 30.0))
 
     def get_capabilities(self) -> list[str]:
         return [
@@ -46,8 +50,17 @@ class HermesAdapter(BaseEngineAdapter):
 
     def get_info(self) -> dict[str, Any]:
         info = super().get_info()
-        info["configured"] = bool(self.base_url)
+        info["configured"] = bool(
+            self.base_url and self.api_key
+        )
         return info
+
+    def _headers(self) -> dict[str, str]:
+        if not self.api_key:
+            return {}
+        return {
+            "Authorization": f"Bearer {self.api_key}"
+        }
 
     async def health_check(self) -> dict[str, Any]:
         if not self.base_url:
@@ -57,20 +70,13 @@ class HermesAdapter(BaseEngineAdapter):
                 "status": "configuration_required"
             }
 
-        headers = {}
-
-        if self.api_key:
-            headers["Authorization"] = (
-                f"Bearer {self.api_key}"
-            )
-
         try:
             async with httpx.AsyncClient(
                 timeout=self.timeout
             ) as client:
                 response = await client.get(
                     f"{self.base_url}{self.health_path}",
-                    headers=headers
+                    headers=self._headers()
                 )
 
             return {
@@ -79,9 +85,82 @@ class HermesAdapter(BaseEngineAdapter):
                 "status_code": response.status_code
             }
 
-        except httpx.HTTPError as exc:
+        except httpx.HTTPError:
             return {
                 "engine": self.engine_id,
                 "connected": False,
-                "error": str(exc)
+                "status": "unreachable"
             }
+
+    async def chat(
+        self,
+        messages: list[dict[str, str]]
+    ) -> dict[str, Any]:
+
+        if not self.base_url or not self.api_key:
+            return {
+                "engine": self.engine_id,
+                "connected": False,
+                "status": "configuration_required"
+            }
+
+        payload = {
+            "model": self.model,
+            "messages": messages,
+            "stream": False
+        }
+
+        try:
+            async with httpx.AsyncClient(
+                timeout=self.timeout
+            ) as client:
+                response = await client.post(
+                    f"{self.base_url}/v1/chat/completions",
+                    headers=self._headers(),
+                    json=payload
+                )
+
+            if not response.is_success:
+                return {
+                    "engine": self.engine_id,
+                    "connected": False,
+                    "status": "upstream_error",
+                    "status_code": response.status_code
+                }
+
+            data = response.json()
+            choices = data.get("choices", [])
+            message = (
+                choices[0].get("message", {})
+                if choices else {}
+            )
+            reply = message.get("content")
+
+            if not isinstance(reply, str):
+                return {
+                    "engine": self.engine_id,
+                    "connected": True,
+                    "status": "invalid_response"
+                }
+
+            return {
+                "engine": self.engine_id,
+                "connected": True,
+                "status": "ok",
+                "model": data.get("model", self.model),
+                "reply": reply
+            }
+
+        except httpx.HTTPError:
+            return {
+                "engine": self.engine_id,
+                "connected": False,
+                "status": "unreachable"
+            }
+        except (ValueError, TypeError, IndexError, KeyError):
+            return {
+                "engine": self.engine_id,
+                "connected": False,
+                "status": "invalid_response"
+            }
+                
