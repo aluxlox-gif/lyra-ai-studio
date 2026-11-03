@@ -7,17 +7,20 @@ from __future__ import annotations
 
 import logging
 import os
+from io import BytesIO
 from functools import wraps
 from typing import Any, Awaitable, Callable
 
 import httpx
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, InputFile, Update
 from telegram.ext import (
     Application,
     ApplicationBuilder,
     CallbackQueryHandler,
     CommandHandler,
     ContextTypes,
+    MessageHandler,
+    filters,
 )
 
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
@@ -33,6 +36,7 @@ API_BASE_URL = os.getenv(
     "https://lyra-ai-studio.vercel.app",
 ).strip().rstrip("/")
 REQUEST_TIMEOUT = float(os.getenv("LYRA_API_TIMEOUT", "12"))
+INTERNAL_API_TOKEN = os.getenv("LYRA_TELEGRAM_API_TOKEN", "").strip()
 
 try:
     ADMIN_IDS = {
@@ -104,6 +108,7 @@ def main_menu() -> InlineKeyboardMarkup:
             InlineKeyboardButton("🎙 Voicebox", callback_data="menu:voice"),
             InlineKeyboardButton("ℹ️ Info", callback_data="menu:info"),
         ],
+        [InlineKeyboardButton("🔨 MANUAL CREATE", callback_data="menu:create")],
         [InlineKeyboardButton("❔ Help", callback_data="menu:help")],
     ])
 
@@ -124,6 +129,7 @@ def api_error_message(exc: Exception) -> str:
 
 @restricted
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    context.user_data.pop("awaiting_manual_prompt", None)
     await send(
         update,
         "🔷 LYRA AI STUDIO\n"
@@ -149,6 +155,68 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         "Catatan: Image Studio, Video Studio, dan OpenMontage "
         "belum memiliki integrasi produksi pada repository saat ini."
     )
+
+
+
+def detect_creation_type(prompt: str) -> str | None:
+    value = prompt.lower()
+    if any(word in value for word in ("video", "film", "animasi", "klip")):
+        return "video"
+    if any(word in value for word in ("audio", "suara", "narasi", "voice", "bicara", "ucapan")):
+        return "audio"
+    if any(word in value for word in ("gambar", "foto", "ilustrasi", "image", "poster")):
+        return "image"
+    return None
+
+
+@restricted
+async def manual_create_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if not context.user_data.get("awaiting_manual_prompt"):
+        return
+    message = update.effective_message
+    if message is None or not message.text:
+        return
+    prompt = message.text.strip()
+    creation_type = detect_creation_type(prompt)
+    if creation_type is None:
+        await message.reply_text("Tambahkan kata gambar, video, atau audio agar jenis konten dapat dikenali.")
+        return
+    context.user_data.pop("awaiting_manual_prompt", None)
+    if creation_type == "image":
+        await message.reply_text("🖼️ Perintah gambar dikenali, tetapi Image Studio belum memiliki provider generator. Belum ada gambar yang dibuat.")
+        return
+    if creation_type == "video":
+        await message.reply_text("🎬 Perintah video dikenali, tetapi Video Studio belum memiliki provider generator. Belum ada video yang dibuat.")
+        return
+    if not INTERNAL_API_TOKEN:
+        await message.reply_text("🎙️ Perintah audio dikenali, tetapi LYRA_TELEGRAM_API_TOKEN belum dikonfigurasi. Audio belum dibuat.")
+        return
+    await message.reply_text("🎙️ Permintaan audio diterima. Memeriksa Voicebox...")
+    try:
+        async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT) as client:
+            response = await client.post(
+                f"{API_BASE_URL}/api/engines/voicebox/generate",
+                json={"text": prompt, "profile_id": None},
+                headers={"X-Lyra-Internal-Token": INTERNAL_API_TOKEN},
+            )
+            response.raise_for_status()
+            audio_bytes = response.content
+            content_type = response.headers.get("content-type", "application/octet-stream")
+        if not audio_bytes:
+            await message.reply_text("Voicebox mengembalikan file kosong. Audio tidak dikirim.")
+            return
+        suffix = ".mp3" if "mpeg" in content_type or "mp3" in content_type else ".wav"
+        audio_file = InputFile(BytesIO(audio_bytes), filename=f"lyra-generated{suffix}")
+        if content_type.startswith("audio/"):
+            await message.reply_audio(audio=audio_file, caption="✅ Audio dari LYRA AI STUDIO")
+        else:
+            await message.reply_document(document=audio_file, caption="✅ File Voicebox dari LYRA AI STUDIO")
+    except httpx.HTTPStatusError as exc:
+        logger.warning("Voice generation failed with HTTP %s", exc.response.status_code)
+        await message.reply_text(f"⚠️ Pembuatan audio gagal (HTTP {exc.response.status_code}). Periksa Voicebox dan profile.")
+    except httpx.RequestError as exc:
+        logger.warning("Voice generation backend request failed: %s", exc)
+        await message.reply_text("⚠️ Backend LYRA tidak dapat dijangkau. Audio belum dibuat.")
 
 
 @restricted
@@ -242,6 +310,20 @@ async def menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         return
     await query.answer()
     action = (query.data or "").partition(":")[2]
+    if action == "create":
+        context.user_data["awaiting_manual_prompt"] = True
+        await query.message.reply_text(
+            "🔨 MANUAL CREATE
+
+"
+            "Tulis instruksi pembuatan konten. Sebutkan gambar, video, atau audio.
+"
+            "Contoh: Buat audio narasi bahasa Indonesia tentang teknologi AI.
+
+"
+            "Ketik /start untuk membatalkan."
+        )
+        return
     handlers = {
         "status": status_command,
         "engines": engines_command,
@@ -281,6 +363,7 @@ def build_application() -> Application:
     application.add_handler(CommandHandler("engines", engines_command))
     application.add_handler(CommandHandler("voice", voice_command))
     application.add_handler(CommandHandler("info", info_command))
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, manual_create_message))
     application.add_handler(CallbackQueryHandler(menu_callback, pattern=r"^menu:"))
     application.add_error_handler(error_handler)
     return application
