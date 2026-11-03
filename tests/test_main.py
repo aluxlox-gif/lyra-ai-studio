@@ -76,3 +76,22 @@ def test_cors_allowed_methods_and_headers():
     assert cors.kwargs["allow_headers"] == [
         "Authorization", "Content-Type"
     ]
+
+
+
+def test_voicebox_generation_requires_internal_token(monkeypatch):
+    monkeypatch.setenv("LYRA_TELEGRAM_API_TOKEN", "test-secret")
+    response = client.post(
+        "/api/engines/voicebox/generate",
+        json={"text": "Halo dunia", "profile_id": "default"},
+    )
+    assert response.status_code == 401
+
+
+def test_voicebox_generation_requires_configured_token(monkeypatch):
+    monkeypatch.delenv("LYRA_TELEGRAM_API_TOKEN", raising=False)
+    response = client.post(
+        "/api/engines/voicebox/generate",
+        json={"text": "Halo dunia", "profile_id": "default"},
+    )
+    assert response.status_code == 503
