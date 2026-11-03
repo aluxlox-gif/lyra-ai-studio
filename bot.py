@@ -313,14 +313,9 @@ async def menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     if action == "create":
         context.user_data["awaiting_manual_prompt"] = True
         await query.message.reply_text(
-            "🔨 MANUAL CREATE
-
-"
-            "Tulis instruksi pembuatan konten. Sebutkan gambar, video, atau audio.
-"
-            "Contoh: Buat audio narasi bahasa Indonesia tentang teknologi AI.
-
-"
+            "🔨 MANUAL CREATE\n\n"
+            "Tulis instruksi pembuatan konten. Sebutkan gambar, video, atau audio.\n"
+            "Contoh: Buat audio narasi bahasa Indonesia tentang teknologi AI.\n\n"
             "Ketik /start untuk membatalkan."
         )
         return
