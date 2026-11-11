@@ -43,7 +43,6 @@ class VoiceboxAdapter(BaseEngineAdapter):
     def get_capabilities(self) -> list[str]:
         return [
             "text_to_speech",
-            "speech_to_text",
             "voice_profiles",
             "voice_generation",
         ]
