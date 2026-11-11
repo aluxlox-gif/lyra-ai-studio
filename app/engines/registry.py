@@ -1,30 +1,33 @@
+def get_engine_status(voicebox_configured: bool = False):
+    voicebox_status = "configuration_required"
+    if voicebox_configured:
+        voicebox_status = "configured_not_checked"
 
-def get_engine_status():
     return {
         "image": {
             "name": "Image Studio",
             "status": "planned",
-            "connected": False
+            "connected": False,
         },
         "video": {
             "name": "Video Studio",
             "status": "planned",
-            "connected": False
+            "connected": False,
         },
         "voice": {
             "name": "Voice Studio",
             "status": "adapter_available",
-            "connected": False
+            "connected": False,
         },
         "voicebox": {
-            "name": "Voicebox",
-            "status": "configuration_required",
-            "connected": False
+            "name": "LYRA VOICEBOX CLOUD",
+            "status": voicebox_status,
+            "configured": voicebox_configured,
+            "connected": False,
         },
         "openmontage": {
             "name": "OpenMontage",
             "status": "planned",
-            "connected": False
-        }
+            "connected": False,
+        },
     }
-    
