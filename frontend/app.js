@@ -37,11 +37,37 @@ async function loadEngines() {
 
 function setupEngineButtons() {
     document.querySelectorAll("[data-engine]").forEach((button) => {
-        button.addEventListener("click", () => {
+        button.addEventListener("click", async () => {
             const engine = button.dataset.engine;
+
+            if (engine === "voice") {
+                try {
+                    const response = await fetch("/api/engines/voicebox/health");
+                    const data = await response.json();
+
+                    if (data.status === "connected") {
+                        alert("LYRA VOICEBOX CLOUD terhubung.");
+                    } else if (data.status === "not_configured") {
+                        alert(
+                            "LYRA VOICEBOX CLOUD belum dikonfigurasi. " +
+                            "Isi VOICEBOX_BASE_URL setelah backend Voicebox milik kita di-deploy."
+                        );
+                    } else {
+                        alert(
+                            "Voicebox sudah dikonfigurasi, tetapi belum dapat dijangkau. " +
+                            "Periksa URL backend dan status server Voicebox."
+                        );
+                    }
+                } catch (error) {
+                    alert("Tidak dapat memeriksa koneksi LYRA VOICEBOX CLOUD.");
+                    console.error("Voicebox status error:", error);
+                }
+                return;
+            }
+
             alert(
                 `${engine.toUpperCase()} ENGINE\n\n` +
-                "Modul ini belum diaktifkan. Status integrasi dapat diperiksa di Engine Registry."
+                "Modul ini belum diaktifkan."
             );
         });
     });
