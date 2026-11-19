@@ -47,8 +47,10 @@ explicitly provides private network access between them.
 
 ## Engine status and next work
 
-- Voicebox: adapter has a speech-generation method; live service, profile,
-  and response format still need runtime verification.
+- Voicebox: adapter has a speech-generation method, verified end to
+  end against a mock service. A free drop-in fallback backed by
+  edge-tts lives in `services/voicebox_fallback/` (same API, same
+  default port) for use as a backup or starter engine.
 - Image Studio: generator provider not yet implemented.
 - Video Studio: generator provider not yet implemented.
 - OpenMontage: provider integration not yet implemented.
