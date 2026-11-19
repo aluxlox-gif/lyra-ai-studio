@@ -1,4 +1,3 @@
-
 def get_engine_status():
     return {
         "image": {
@@ -25,6 +24,10 @@ def get_engine_status():
             "name": "OpenMontage",
             "status": "planned",
             "connected": False
+        },
+        "hermes": {
+            "name": "Hermes Agent",
+            "status": "adapter_available",
+            "connected": False
         }
     }
-    

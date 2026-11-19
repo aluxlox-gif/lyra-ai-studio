@@ -49,9 +49,7 @@ class VoiceboxAdapter(BaseEngineAdapter):
         """Check Voicebox connectivity through its profiles endpoint."""
 
         try:
-            async with httpx.AsyncClient(
-                timeout=self.timeout
-            ) as client:
+            async with httpx.AsyncClient(timeout=self.timeout, trust_env=False) as client:
                 response = await client.get(
                     f"{self.base_url}/profiles"
                 )
@@ -79,9 +77,7 @@ class VoiceboxAdapter(BaseEngineAdapter):
     async def list_profiles(self) -> Any:
         """Retrieve available Voicebox voice profiles."""
 
-        async with httpx.AsyncClient(
-            timeout=self.timeout
-        ) as client:
+        async with httpx.AsyncClient(timeout=self.timeout, trust_env=False) as client:
             response = await client.get(
                 f"{self.base_url}/profiles"
             )
@@ -115,9 +111,7 @@ class VoiceboxAdapter(BaseEngineAdapter):
             "X-Voicebox-Client-Id": self.client_id,
         }
 
-        async with httpx.AsyncClient(
-            timeout=self.timeout
-        ) as client:
+        async with httpx.AsyncClient(timeout=self.timeout, trust_env=False) as client:
             response = await client.post(
                 f"{self.base_url}/generate",
                 json=payload,

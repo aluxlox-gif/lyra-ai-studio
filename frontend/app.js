@@ -1,3 +1,4 @@
+
 "use strict";
 
 async function checkSystem() {
@@ -22,9 +23,10 @@ async function checkSystem() {
         connectionLabel.textContent = "Backend terhubung";
 
         systemStatus.textContent =
-            `${data.application} v${data.version} · Online`;
+            `${data.app || "LYRA AI STUDIO"} v${data.version} · Online`;
 
-        statusDot.classList.add("online");
+        statusDot?.classList.add("online");
+
     } catch (error) {
         connectionLabel.textContent =
             "Backend tidak tersedia";
@@ -32,7 +34,7 @@ async function checkSystem() {
         systemStatus.textContent =
             "Backend connection failed";
 
-        statusDot.classList.remove("online");
+        statusDot?.classList.remove("online");
 
         console.error("LYRA health check error:", error);
     }
@@ -46,11 +48,15 @@ async function loadEngines() {
             throw new Error("Could not load engine registry");
         }
 
-        const data = await response.json();
+        const engines = await response.json();
 
-        console.info("LYRA engine registry:", data.engines);
+        console.info("LYRA engine registry:", engines);
+
+        return engines;
+
     } catch (error) {
         console.error("LYRA engine registry error:", error);
+        return null;
     }
 }
 
@@ -63,7 +69,7 @@ function setupEngineButtons() {
 
                 alert(
                     `${engine.toUpperCase()} ENGINE\n\n` +
-                    "Mesin ini belum terintegrasi. " +
+                    "Mesin ini belum memiliki antarmuka operasional. " +
                     "Integrasi akan dilakukan pada tahap berikutnya."
                 );
             });

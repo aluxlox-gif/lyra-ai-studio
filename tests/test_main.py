@@ -1,5 +1,5 @@
-
 from fastapi.testclient import TestClient
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.main import app
 
@@ -50,4 +50,48 @@ def test_root():
     response = client.get("/")
 
     assert response.status_code == 200
-  
+
+
+def test_cors_has_no_wildcard_origin():
+    cors = next(
+        middleware
+        for middleware in app.user_middleware
+        if middleware.cls is CORSMiddleware
+    )
+
+    assert "*" not in cors.kwargs["allow_origins"]
+
+
+def test_cors_allowed_methods_and_headers():
+    cors = next(
+        middleware
+        for middleware in app.user_middleware
+        if middleware.cls is CORSMiddleware
+    )
+
+    assert cors.kwargs["allow_methods"] == [
+        "GET", "POST", "OPTIONS"
+    ]
+
+    assert cors.kwargs["allow_headers"] == [
+        "Authorization", "Content-Type"
+    ]
+
+
+
+def test_voicebox_generation_requires_internal_token(monkeypatch):
+    monkeypatch.setenv("LYRA_TELEGRAM_API_TOKEN", "test-secret")
+    response = client.post(
+        "/api/engines/voicebox/generate",
+        json={"text": "Halo dunia", "profile_id": "default"},
+    )
+    assert response.status_code == 401
+
+
+def test_voicebox_generation_requires_configured_token(monkeypatch):
+    monkeypatch.delenv("LYRA_TELEGRAM_API_TOKEN", raising=False)
+    response = client.post(
+        "/api/engines/voicebox/generate",
+        json={"text": "Halo dunia", "profile_id": "default"},
+    )
+    assert response.status_code == 503
