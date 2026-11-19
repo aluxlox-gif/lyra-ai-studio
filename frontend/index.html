@@ -11,17 +11,17 @@
 </head>
 <body>
   <aside class="sidebar">
-    <a class="brand" href="#dashboard" aria-label="LYRA AI STUDIO home">
+    <a class="brand" href="#dashboard" aria-label="LYRA AI STUDIO home" data-view="dashboard">
       <span class="brand-icon">L</span>
       <span><strong>LYRA</strong><small>AI STUDIO</small></span>
     </a>
     <p class="sidebar-label">WORKSPACE</p>
     <nav class="navigation" aria-label="Navigasi utama">
-      <a class="nav-item active" href="#dashboard"><span>◈</span> Dashboard</a>
-      <a class="nav-item" href="#engines"><span>▦</span> Studio Engines</a>
-      <a class="nav-item" href="#voicebox"><span>♫</span> Voicebox</a>
-      <a class="nav-item" href="#hermes"><span>✧</span> Hermes Agent</a>
-      <a class="nav-item" href="#story"><span>▤</span> Story Engine</a>
+      <a class="nav-item active" href="#dashboard" data-view="dashboard" aria-current="page"><span>◈</span> Dashboard</a>
+      <a class="nav-item" href="#engines" data-view="engines"><span>▦</span> Studio Engines</a>
+      <a class="nav-item" href="#voicebox" data-view="voicebox"><span>♫</span> Voicebox</a>
+      <a class="nav-item" href="#hermes" data-view="hermes"><span>✧</span> Hermes Agent</a>
+      <a class="nav-item" href="#story" data-view="story"><span>▤</span> Story Engine</a>
     </nav>
     <div class="sidebar-footer">
       <span class="status-dot" id="sidebar-dot"></span>
@@ -29,12 +29,12 @@
     </div>
   </aside>
 
-  <main class="main-content" id="dashboard">
+  <main class="main-content">
     <header class="topbar">
       <div>
         <p class="eyebrow">CREATIVE WORKSPACE / CONTROL CENTER</p>
-        <h1>Dashboard</h1>
-        <p class="muted">Ringkasan backend dan kesiapan seluruh engine LYRA.</p>
+        <h1 id="page-title">Dashboard</h1>
+        <p class="muted" id="page-description">Ringkasan backend dan kesiapan seluruh engine LYRA.</p>
       </div>
       <div class="topbar-actions">
         <span class="version-badge" id="version-badge">VERSION —</span>
@@ -42,71 +42,54 @@
       </div>
     </header>
 
-    <section class="hero">
-      <div class="hero-content">
-        <p class="eyebrow">UNIFIED AI STUDIO</p>
-        <h2>Imagine it.<br><span>Create it with LYRA.</span></h2>
-        <p class="hero-description">Satu pusat kendali untuk memantau layanan kreatif, orkestrasi agent, dan pipeline produksi. Status ditampilkan berdasarkan respons backend aktual.</p>
-        <a class="primary-button" href="#engines">Lihat status engine <span>→</span></a>
-      </div>
-      <div class="hero-symbol" aria-hidden="true"><div class="symbol-ring ring-one"></div><div class="symbol-ring ring-two"></div><div class="symbol-core">L</div></div>
+    <section class="view-panel active" id="dashboard" data-title="Dashboard" data-description="Ringkasan backend dan kesiapan seluruh engine LYRA.">
+      <section class="hero">
+        <div class="hero-content">
+          <p class="eyebrow">UNIFIED AI STUDIO</p>
+          <h2>Imagine it.<br><span>Create it with LYRA.</span></h2>
+          <p class="hero-description">Satu pusat kendali untuk memantau layanan kreatif, orkestrasi agent, dan pipeline produksi. Status ditampilkan berdasarkan respons backend aktual.</p>
+          <a class="primary-button" href="#engines" data-view="engines">Lihat status engine <span>→</span></a>
+        </div>
+        <div class="hero-symbol" aria-hidden="true"><div class="symbol-ring ring-one"></div><div class="symbol-ring ring-two"></div><div class="symbol-core">L</div></div>
+      </section>
+      <section class="overview-grid" aria-label="Ringkasan sistem">
+        <article class="overview-card"><span class="overview-label">BACKEND</span><strong id="backend-state">Checking…</strong><small id="backend-detail">Menunggu /api/health</small></article>
+        <article class="overview-card"><span class="overview-label">ENGINE TERDAFTAR</span><strong id="engine-count">—</strong><small>Data dari /api/engines</small></article>
+        <article class="overview-card"><span class="overview-label">ENGINE TERHUBUNG</span><strong id="connected-count">—</strong><small>Status koneksi yang dilaporkan registry</small></article>
+        <article class="overview-card"><span class="overview-label">PEMERIKSAAN TERAKHIR</span><strong id="last-checked">—</strong><small>Refresh otomatis setiap 30 detik</small></article>
+      </section>
     </section>
 
-    <section class="overview-grid" aria-label="Ringkasan sistem">
-      <article class="overview-card">
-        <span class="overview-label">BACKEND</span>
-        <strong id="backend-state">Checking…</strong>
-        <small id="backend-detail">Menunggu /api/health</small>
-      </article>
-      <article class="overview-card">
-        <span class="overview-label">ENGINE TERDAFTAR</span>
-        <strong id="engine-count">—</strong>
-        <small>Data dari /api/engines</small>
-      </article>
-      <article class="overview-card">
-        <span class="overview-label">ENGINE TERHUBUNG</span>
-        <strong id="connected-count">—</strong>
-        <small>Status koneksi yang dilaporkan registry</small>
-      </article>
-      <article class="overview-card">
-        <span class="overview-label">PEMERIKSAAN TERAKHIR</span>
-        <strong id="last-checked">—</strong>
-        <small>Refresh otomatis setiap 30 detik</small>
-      </article>
+    <section class="view-panel" id="engines" data-title="Studio Engines" data-description="Daftar engine dan status aktual yang dilaporkan backend.">
+      <section class="section">
+        <div class="section-heading"><div><p class="eyebrow">LIVE REGISTRY</p><h2>Studio Engines</h2></div><span class="section-caption">Status dari API backend</span></div>
+        <div class="engine-grid" id="engine-grid" aria-live="polite"><article class="engine-card loading-card"><p>Memuat registry engine…</p></article></div>
+      </section>
     </section>
 
-    <section class="section" id="engines">
-      <div class="section-heading">
-        <div><p class="eyebrow">LIVE REGISTRY</p><h2>Studio Engines</h2></div>
-        <span class="section-caption">Status dari API backend</span>
-      </div>
-      <div class="engine-grid" id="engine-grid" aria-live="polite">
-        <article class="engine-card loading-card"><p>Memuat registry engine…</p></article>
-      </div>
-    </section>
-
-    <section class="detail-grid">
-      <article class="detail-panel" id="voicebox">
+    <section class="view-panel" id="voicebox" data-title="Voicebox" data-description="Status koneksi layanan generasi suara.">
+      <article class="detail-panel standalone-panel">
         <div class="panel-heading"><div><p class="eyebrow">VOICE GENERATION SERVICE</p><h2>Voicebox</h2></div><span class="status-pill neutral" id="voicebox-state">Checking…</span></div>
         <p class="panel-copy">Pemeriksaan koneksi menggunakan endpoint health Voicebox. Pembuatan audio tetap dilindungi token internal dan tidak dijalankan langsung dari browser.</p>
         <dl class="meta-list"><div><dt>Health endpoint</dt><dd>/api/engines/voicebox/health</dd></div><div><dt>Connection</dt><dd id="voicebox-detail">Belum diperiksa</dd></div></dl>
       </article>
-      <article class="detail-panel" id="hermes">
+    </section>
+
+    <section class="view-panel" id="hermes" data-title="Hermes Agent" data-description="Status koneksi agent bridge dan orkestrasi.">
+      <article class="detail-panel standalone-panel">
         <div class="panel-heading"><div><p class="eyebrow">AGENT BRIDGE</p><h2>Hermes Agent</h2></div><span class="status-pill neutral" id="hermes-state">Checking…</span></div>
         <p class="panel-copy">Pemeriksaan status agent melalui adapter backend. Endpoint chat memerlukan Bearer bridge token; kredensial tidak disimpan di frontend.</p>
         <dl class="meta-list"><div><dt>Health endpoint</dt><dd>/api/agents/hermes/health</dd></div><div><dt>Connection</dt><dd id="hermes-detail">Belum diperiksa</dd></div></dl>
       </article>
     </section>
 
-    <section class="section detail-panel story-panel" id="story">
-      <div class="panel-heading"><div><p class="eyebrow">PIPELINE ORCHESTRATION</p><h2>Story Engine</h2></div><span class="status-pill neutral" id="story-state">From registry</span></div>
-      <p class="panel-copy">Pipeline Story Engine masih berupa kerangka perencanaan. Tahapan di bawah ini tidak dianggap aktif sampai provider masing-masing tersedia.</p>
-      <div class="pipeline-grid" id="story-stages"><p class="muted">Rincian tahapan pipeline belum disediakan oleh endpoint backend saat ini.</p></div>
-    </section>
-
-    <section class="notice-panel">
-      <strong>Catatan integrasi</strong>
-      <p>Image Studio, Video Studio, OpenMontage, dan tahapan Story Engine masih berstatus planned. UI ini hanya memantau API yang tersedia; tidak mengklaim generator atau workflow yang belum diimplementasikan.</p>
+    <section class="view-panel" id="story" data-title="Story Engine" data-description="Status kerangka pipeline pengembangan cerita dan produksi.">
+      <section class="detail-panel story-panel standalone-panel">
+        <div class="panel-heading"><div><p class="eyebrow">PIPELINE ORCHESTRATION</p><h2>Story Engine</h2></div><span class="status-pill neutral" id="story-state">From registry</span></div>
+        <p class="panel-copy">Pipeline Story Engine masih berupa kerangka perencanaan. Tahapan di bawah ini tidak dianggap aktif sampai provider masing-masing tersedia.</p>
+        <div class="pipeline-grid" id="story-stages"><p class="muted">Rincian tahapan pipeline belum disediakan oleh endpoint backend saat ini.</p></div>
+      </section>
+      <section class="notice-panel"><strong>Catatan integrasi</strong><p>Image Studio, Video Studio, OpenMontage, dan tahapan Story Engine masih berstatus planned. UI ini hanya memantau API yang tersedia; tidak mengklaim generator atau workflow yang belum diimplementasikan.</p></section>
     </section>
 
     <footer class="footer"><span>LYRA AI STUDIO</span><span id="system-status">Menghubungkan…</span></footer>
