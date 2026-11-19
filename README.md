@@ -53,6 +53,10 @@ explicitly provides private network access between them.
 - Video Studio: generator provider not yet implemented.
 - OpenMontage: provider integration not yet implemented.
 - Hermes: adapter and bridge are retained but not used by Manual Create yet.
+- Story Engine: folded in from the former lyra-story-engine repository.
+  Pipeline scaffold, registry entry, and design notes
+  (`docs/story-engine.md`) are in place; stage providers are not
+  implemented yet.
 
 The image/video providers must be selected and configured before those prompt
 types can return actual media files in Telegram. Hermes remains deferred until

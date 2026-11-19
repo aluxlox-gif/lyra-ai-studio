@@ -29,5 +29,10 @@ def get_engine_status():
             "name": "Hermes Agent",
             "status": "adapter_available",
             "connected": False
+        },
+        "story": {
+            "name": "Story Engine",
+            "status": "planned",
+            "connected": False
         }
     }
