@@ -8,11 +8,12 @@ from typing import Literal
 from fastapi import FastAPI, Header, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel, Field
 
 from app.engines.registry import get_engine_status
 from app.engines.adapters.hermes import HermesAdapter
+from app.engines.adapters.voicebox import VoiceboxAdapter
 
 APP_NAME = "LYRA AI STUDIO"
 APP_VERSION = "1.0.0"
@@ -24,6 +25,12 @@ VOICEBOX_BASE_URL = os.getenv(
     "VOICEBOX_BASE_URL",
     "http://127.0.0.1:17493"
 ).rstrip("/")
+
+
+class VoiceGenerationRequest(BaseModel):
+    text: str = Field(min_length=1, max_length=5000)
+    profile_id: str | None = None
+    language: str = Field(default="id", min_length=2, max_length=12)
 
 
 class HermesMessage(BaseModel):
@@ -125,6 +132,58 @@ async def voicebox_health():
             "connected": False,
             "message": "Voicebox is unreachable"
         }
+
+
+@app.post("/api/engines/voicebox/generate")
+async def generate_voicebox_audio(
+    payload: VoiceGenerationRequest,
+    x_lyra_internal_token: str | None = Header(default=None),
+):
+    expected_token = os.getenv("LYRA_TELEGRAM_API_TOKEN", "")
+    if not expected_token:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="telegram_api_token_not_configured",
+        )
+    if not x_lyra_internal_token or not secrets.compare_digest(
+        x_lyra_internal_token, expected_token
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="invalid_or_missing_internal_token",
+        )
+
+    profile_id = payload.profile_id or os.getenv("VOICEBOX_DEFAULT_PROFILE_ID", "")
+    if not profile_id:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="voicebox_default_profile_not_configured",
+        )
+
+    adapter = VoiceboxAdapter(config={"base_url": VOICEBOX_BASE_URL})
+    try:
+        result = await adapter.generate_speech(
+            text=payload.text,
+            profile_id=profile_id,
+            language=payload.language,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="voicebox_generation_failed",
+        ) from exc
+
+    audio = result.get("audio", b"")
+    if not audio:
+        raise HTTPException(status_code=502, detail="voicebox_returned_empty_audio")
+    media_type = result.get("content_type", "application/octet-stream")
+    return StreamingResponse(
+        iter([audio]),
+        media_type=media_type,
+        headers={"Content-Disposition": 'attachment; filename="lyra-generated-audio"'}
+    )
 
 
 @app.get("/api/agents/hermes/health")
