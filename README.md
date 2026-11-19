@@ -57,6 +57,11 @@ explicitly provides private network access between them.
   Pipeline scaffold, registry entry, and design notes
   (`docs/story-engine.md`) are in place; stage providers are not
   implemented yet.
+- Automation: the LYRA AI Automation Center roadmap now lives in
+  `docs/automation-roadmap.md`, mapped to what the studio has
+  actually built. Its Telegram bot skeleton is superseded by this
+  repository's controller; the Automation Engine, Memory/Storage,
+  and Monitoring layers are still planned.
 
 The image/video providers must be selected and configured before those prompt
 types can return actual media files in Telegram. Hermes remains deferred until
