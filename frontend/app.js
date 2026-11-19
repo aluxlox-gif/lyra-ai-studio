@@ -56,14 +56,50 @@ function statusClass(status, connected) {
   return "bad";
 }
 
+const SETTINGS_KEY = "lyra.settings";
+const ENGINES_CACHE_KEY = "lyra.cache.engines";
+
+function loadSettings() {
+  try {
+    return JSON.parse(window.localStorage.getItem(SETTINGS_KEY)) || {};
+  } catch {
+    return {};
+  }
+}
+
+function saveSettings(settings) {
+  window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+}
+
+function apiBase() {
+  const base = String(loadSettings().apiBaseUrl || "").trim();
+  return base.replace(/\/+$/, "");
+}
+
 async function getJson(path) {
-  const response = await fetch(path, {
+  const response = await fetch(apiBase() + path, {
     method: "GET",
     headers: { "Accept": "application/json" },
     cache: "no-store"
   });
   if (!response.ok) throw new Error(path + " returned HTTP " + response.status);
   return response.json();
+}
+
+function cacheEngines(engines) {
+  try {
+    window.localStorage.setItem(ENGINES_CACHE_KEY, JSON.stringify({
+      engines, savedAt: new Date().toISOString()
+    }));
+  } catch { /* storage full/blocked: offline snapshot is best-effort */ }
+}
+
+function cachedEngines() {
+  try {
+    return JSON.parse(window.localStorage.getItem(ENGINES_CACHE_KEY));
+  } catch {
+    return null;
+  }
 }
 
 function makeEngineCard(id, engine) {
@@ -160,21 +196,32 @@ async function refreshDashboard() {
     } else {
       document.getElementById("backend-state").textContent = "OFFLINE";
       document.getElementById("backend-detail").textContent = healthResult.reason?.message || "Health check gagal";
-      document.getElementById("connection-label").textContent = "Backend tidak tersedia";
+      document.getElementById("connection-label").textContent =
+        navigator.onLine === false ? "Mode offline" : "Backend tidak tersedia";
       document.getElementById("sidebar-dot").classList.remove("online");
       document.getElementById("system-status").textContent = "Backend connection failed";
     }
 
     if (enginesResult.status === "fulfilled") {
       renderEngines(enginesResult.value);
+      cacheEngines(enginesResult.value);
     } else {
-      document.getElementById("engine-grid").replaceChildren();
-      const error = document.createElement("p");
-      error.className = "error-message";
-      error.textContent = "Gagal memuat /api/engines: " + enginesResult.reason.message;
-      document.getElementById("engine-grid").append(error);
-      document.getElementById("engine-count").textContent = "—";
-      document.getElementById("connected-count").textContent = "—";
+      const snapshot = cachedEngines();
+      if (snapshot && snapshot.engines) {
+        renderEngines(snapshot.engines);
+        document.getElementById("system-status").textContent =
+          "Mode offline — data engine terakhir dari " +
+          new Intl.DateTimeFormat("id-ID", { hour: "2-digit", minute: "2-digit" })
+            .format(new Date(snapshot.savedAt));
+      } else {
+        document.getElementById("engine-grid").replaceChildren();
+        const error = document.createElement("p");
+        error.className = "error-message";
+        error.textContent = "Gagal memuat /api/engines: " + enginesResult.reason.message;
+        document.getElementById("engine-grid").append(error);
+        document.getElementById("engine-count").textContent = "—";
+        document.getElementById("connected-count").textContent = "—";
+      }
     }
 
     setConnection("voicebox-state", "voicebox-detail",
@@ -190,6 +237,44 @@ async function refreshDashboard() {
     button.disabled = false;
     button.classList.remove("is-loading");
   }
+}
+
+function initSettings() {
+  const form = document.getElementById("settings-form");
+  if (!form) return;
+  const fields = {
+    apiBaseUrl: document.getElementById("setting-api-base"),
+    internalToken: document.getElementById("setting-internal-token"),
+    hermesToken: document.getElementById("setting-hermes-token"),
+    voiceProfileId: document.getElementById("setting-voice-profile")
+  };
+  const settings = loadSettings();
+  Object.entries(fields).forEach(([key, input]) => {
+    if (input) input.value = settings[key] || "";
+  });
+  const feedback = document.getElementById("settings-feedback");
+  form.addEventListener("submit", event => {
+    event.preventDefault();
+    const next = {};
+    Object.entries(fields).forEach(([key, input]) => {
+      if (input) next[key] = input.value.trim();
+    });
+    saveSettings(next);
+    feedback.textContent = "Tersimpan di perangkat ini.";
+    refreshDashboard();
+  });
+  document.getElementById("settings-clear").addEventListener("click", () => {
+    window.localStorage.removeItem(SETTINGS_KEY);
+    Object.values(fields).forEach(input => { if (input) input.value = ""; });
+    feedback.textContent = "Pengaturan dihapus.";
+  });
+  const mode = document.getElementById("settings-mode");
+  const updateMode = () => {
+    mode.textContent = navigator.onLine ? "Online" : "Offline (fitur dasar)";
+  };
+  updateMode();
+  window.addEventListener("online", updateMode);
+  window.addEventListener("offline", updateMode);
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -208,6 +293,14 @@ document.addEventListener("DOMContentLoaded", () => {
   window.addEventListener("popstate", () => activateView(window.location.hash.slice(1) || "dashboard"));
   activateView(window.location.hash.slice(1) || "dashboard");
   document.getElementById("refresh-button").addEventListener("click", refreshDashboard);
+  initSettings();
   refreshDashboard();
   window.setInterval(refreshDashboard, 30000);
+
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/sw.js").catch(() => {
+      // Offline shell is a progressive enhancement; the app
+      // still runs normally without it.
+    });
+  }
 });

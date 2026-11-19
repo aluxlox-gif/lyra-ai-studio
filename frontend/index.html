@@ -6,6 +6,11 @@
   <meta name="theme-color" content="#090b12">
   <meta name="description" content="LYRA AI STUDIO — unified creative AI workspace and engine monitor.">
   <title>LYRA AI STUDIO</title>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="stylesheet" href="/styles.css">
   <script src="/app.js" defer></script>
 </head>
@@ -22,6 +27,7 @@
       <a class="nav-item" href="#voicebox" data-view="voicebox"><span>♫</span> Voicebox</a>
       <a class="nav-item" href="#hermes" data-view="hermes"><span>✧</span> Hermes Agent</a>
       <a class="nav-item" href="#story" data-view="story"><span>▤</span> Story Engine</a>
+      <a class="nav-item" href="#settings" data-view="settings"><span>⚙</span> Pengaturan</a>
     </nav>
     <div class="sidebar-footer">
       <span class="status-dot" id="sidebar-dot"></span>
@@ -90,6 +96,33 @@
         <div class="pipeline-grid" id="story-stages"><p class="muted">Rincian tahapan pipeline belum disediakan oleh endpoint backend saat ini.</p></div>
       </section>
       <section class="notice-panel"><strong>Catatan integrasi</strong><p>Image Studio, Video Studio, OpenMontage, dan tahapan Story Engine masih berstatus planned. UI ini hanya memantau API yang tersedia; tidak mengklaim generator atau workflow yang belum diimplementasikan.</p></section>
+    </section>
+
+    <section class="view-panel" id="settings" data-title="Pengaturan" data-description="Kode API dan alamat layanan — disimpan di perangkat ini dan diisi saat fitur online diaktifkan.">
+      <article class="detail-panel standalone-panel">
+        <div class="panel-heading"><div><p class="eyebrow">KONFIGURASI LOKAL</p><h2>Pengaturan</h2></div><span class="status-pill neutral" id="settings-state">Di perangkat ini</span></div>
+        <p class="panel-copy">Aplikasi berjalan dengan fitur dasar secara offline. Kode API dan alamat layanan di bawah ini <strong>disimpan hanya di browser perangkat ini</strong> (localStorage) dan dipakai aplikasi saat mode online diaktifkan — silakan diisi nanti setelah aplikasi jadi. Kosongkan Alamat API untuk memakai server yang sama dengan aplikasi ini.</p>
+        <form class="settings-form" id="settings-form">
+          <label>Alamat API (API Base URL)
+            <input type="url" id="setting-api-base" placeholder="https://lyra-ai-studio.vercel.app" autocomplete="off">
+          </label>
+          <label>Token Internal LYRA (untuk endpoint Voicebox)
+            <input type="password" id="setting-internal-token" placeholder="Diisi nanti" autocomplete="off">
+          </label>
+          <label>Token Bridge Hermes
+            <input type="password" id="setting-hermes-token" placeholder="Diisi nanti" autocomplete="off">
+          </label>
+          <label>ID Profil Voicebox Default
+            <input type="text" id="setting-voice-profile" placeholder="id-gadis" autocomplete="off">
+          </label>
+          <div class="settings-actions">
+            <button class="refresh-button" type="submit">Simpan pengaturan</button>
+            <button class="refresh-button" type="button" id="settings-clear">Hapus semua</button>
+            <span class="muted" id="settings-feedback" role="status"></span>
+          </div>
+        </form>
+        <dl class="meta-list"><div><dt>Mode koneksi</dt><dd id="settings-mode">—</dd></div><div><dt>Penyimpanan</dt><dd>localStorage perangkat ini</dd></div></dl>
+      </article>
     </section>
 
     <footer class="footer"><span>LYRA AI STUDIO</span><span id="system-status">Menghubungkan…</span></footer>

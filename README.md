@@ -2,6 +2,17 @@
 
 Unified AI Image, Video, and Voice Production Platform.
 
+## Offline-first & Android
+
+LYRA is being built **offline-first**: the web app is an installable
+PWA whose shell and basic features (dashboard, engine list,
+settings) open without internet, showing the last synced engine
+data while offline. API keys and service URLs are entered later,
+on-device, on the app's **Pengaturan** (Settings) page — they are
+stored only in the device's localStorage. Full guide, including
+running the whole stack on a phone with Termux:
+[docs/android.md](docs/android.md).
+
 ## Telegram Controller and Manual Create
 
 The Telegram bot runs as a **separate process** from the FastAPI backend.
