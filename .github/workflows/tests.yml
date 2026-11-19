@@ -4,8 +4,10 @@ on:
   push:
     branches:
       - prototype/hermes-bridge
+      - feature/frontend-backend-sync
   pull_request:
     branches:
+      - main
       - prototype/hermes-bridge
 
 jobs:
