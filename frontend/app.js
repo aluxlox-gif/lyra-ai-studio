@@ -16,7 +16,7 @@ const STATUS_LABELS = {
   healthy: "SEHAT",
   adapter_available: "ADAPTER TERSEDIA",
   configuration_required: "PERLU KONFIGURASI",
-  planned: "DIRencanakan".toUpperCase(),
+  planned: "DIRANCANG",
   pending: "MENUNGGU",
   unavailable: "TIDAK TERSEDIA",
   unreachable: "TIDAK TERJANGKAU",
