@@ -11,18 +11,38 @@ const ENGINE_META = {
 };
 
 const STATUS_LABELS = {
-  connected: "TERHUBUNG",
-  ok: "AKTIF",
-  healthy: "SEHAT",
+  connected: "TERHUBUNG", ok: "AKTIF", healthy: "SEHAT",
   adapter_available: "ADAPTER TERSEDIA",
   configuration_required: "PERLU KONFIGURASI",
-  planned: "DIRANCANG",
-  pending: "MENUNGGU",
-  unavailable: "TIDAK TERSEDIA",
-  unreachable: "TIDAK TERJANGKAU",
-  upstream_error: "ERROR LAYANAN",
-  invalid_response: "RESPONS TIDAK VALID"
+  planned: "DIRANCANG", pending: "MENUNGGU",
+  unavailable: "TIDAK TERSEDIA", unreachable: "TIDAK TERJANGKAU",
+  upstream_error: "ERROR LAYANAN", invalid_response: "RESPONS TIDAK VALID"
 };
+
+function activateView(viewId) {
+  const panels = [...document.querySelectorAll(".view-panel")];
+  const target = panels.find(panel => panel.id === viewId) || panels.find(panel => panel.id === "dashboard");
+  if (!target) return;
+
+  panels.forEach(panel => {
+    const selected = panel === target;
+    panel.classList.toggle("active", selected);
+    panel.hidden = !selected;
+  });
+
+  document.querySelectorAll("[data-view]").forEach(link => {
+    const selected = link.dataset.view === target.id;
+    link.classList.toggle("active", selected && link.classList.contains("nav-item"));
+    if (link.classList.contains("nav-item")) {
+      if (selected) link.setAttribute("aria-current", "page");
+      else link.removeAttribute("aria-current");
+    }
+  });
+
+  document.getElementById("page-title").textContent = target.dataset.title || "LYRA AI STUDIO";
+  document.getElementById("page-description").textContent = target.dataset.description || "";
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
 
 function labelForStatus(status, connected) {
   if (connected === true) return "TERHUBUNG";
@@ -118,59 +138,75 @@ async function refreshDashboard() {
   const button = document.getElementById("refresh-button");
   button.disabled = true;
   button.classList.add("is-loading");
-  const tasks = await Promise.allSettled([
-    getJson("/api/health"),
-    getJson("/api/engines"),
-    getJson("/api/engines/voicebox/health"),
-    getJson("/api/agents/hermes/health")
-  ]);
+  try {
+    const tasks = await Promise.allSettled([
+      getJson("/api/health"),
+      getJson("/api/engines"),
+      getJson("/api/engines/voicebox/health"),
+      getJson("/api/agents/hermes/health")
+    ]);
 
-  const [healthResult, enginesResult, voiceResult, hermesResult] = tasks;
-  const health = healthResult.status === "fulfilled" ? healthResult.value : null;
+    const [healthResult, enginesResult, voiceResult, hermesResult] = tasks;
+    const health = healthResult.status === "fulfilled" ? healthResult.value : null;
 
-  if (health) {
-    document.getElementById("backend-state").textContent = "ONLINE";
-    document.getElementById("backend-detail").textContent =
-      (health.app || "LYRA AI STUDIO") + " · v" + (health.version || "—");
-    document.getElementById("version-badge").textContent = "VERSION " + (health.version || "—");
-    document.getElementById("connection-label").textContent = "Backend terhubung";
-    document.getElementById("sidebar-dot").classList.add("online");
-    document.getElementById("system-status").textContent = "Backend online";
-  } else {
-    document.getElementById("backend-state").textContent = "OFFLINE";
-    document.getElementById("backend-detail").textContent = healthResult.reason?.message || "Health check gagal";
-    document.getElementById("connection-label").textContent = "Backend tidak tersedia";
-    document.getElementById("sidebar-dot").classList.remove("online");
-    document.getElementById("system-status").textContent = "Backend connection failed";
+    if (health) {
+      document.getElementById("backend-state").textContent = "ONLINE";
+      document.getElementById("backend-detail").textContent =
+        (health.app || "LYRA AI STUDIO") + " · v" + (health.version || "—");
+      document.getElementById("version-badge").textContent = "VERSION " + (health.version || "—");
+      document.getElementById("connection-label").textContent = "Backend terhubung";
+      document.getElementById("sidebar-dot").classList.add("online");
+      document.getElementById("system-status").textContent = "Backend online";
+    } else {
+      document.getElementById("backend-state").textContent = "OFFLINE";
+      document.getElementById("backend-detail").textContent = healthResult.reason?.message || "Health check gagal";
+      document.getElementById("connection-label").textContent = "Backend tidak tersedia";
+      document.getElementById("sidebar-dot").classList.remove("online");
+      document.getElementById("system-status").textContent = "Backend connection failed";
+    }
+
+    if (enginesResult.status === "fulfilled") {
+      renderEngines(enginesResult.value);
+    } else {
+      document.getElementById("engine-grid").replaceChildren();
+      const error = document.createElement("p");
+      error.className = "error-message";
+      error.textContent = "Gagal memuat /api/engines: " + enginesResult.reason.message;
+      document.getElementById("engine-grid").append(error);
+      document.getElementById("engine-count").textContent = "—";
+      document.getElementById("connected-count").textContent = "—";
+    }
+
+    setConnection("voicebox-state", "voicebox-detail",
+      voiceResult.status === "fulfilled" ? voiceResult.value : null,
+      voiceResult.status === "rejected" ? voiceResult.reason : null);
+    setConnection("hermes-state", "hermes-detail",
+      hermesResult.status === "fulfilled" ? hermesResult.value : null,
+      hermesResult.status === "rejected" ? hermesResult.reason : null);
+
+    document.getElementById("last-checked").textContent =
+      new Intl.DateTimeFormat("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" }).format(new Date());
+  } finally {
+    button.disabled = false;
+    button.classList.remove("is-loading");
   }
-
-  if (enginesResult.status === "fulfilled") {
-    renderEngines(enginesResult.value);
-  } else {
-    document.getElementById("engine-grid").replaceChildren();
-    const error = document.createElement("p");
-    error.className = "error-message";
-    error.textContent = "Gagal memuat /api/engines: " + enginesResult.reason.message;
-    document.getElementById("engine-grid").append(error);
-    document.getElementById("engine-count").textContent = "—";
-    document.getElementById("connected-count").textContent = "—";
-  }
-
-  setConnection("voicebox-state", "voicebox-detail",
-    voiceResult.status === "fulfilled" ? voiceResult.value : null,
-    voiceResult.status === "rejected" ? voiceResult.reason : null);
-  setConnection("hermes-state", "hermes-detail",
-    hermesResult.status === "fulfilled" ? hermesResult.value : null,
-    hermesResult.status === "rejected" ? hermesResult.reason : null);
-
-  document.getElementById("last-checked").textContent =
-    new Intl.DateTimeFormat("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" }).format(new Date());
-
-  button.disabled = false;
-  button.classList.remove("is-loading");
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll("a[data-view]").forEach(link => {
+    link.addEventListener("click", event => {
+      event.preventDefault();
+      const viewId = link.dataset.view;
+      if (!viewId) return;
+      if (window.location.hash !== "#" + viewId) {
+        window.history.pushState({ viewId }, "", "#" + viewId);
+      }
+      activateView(viewId);
+    });
+  });
+
+  window.addEventListener("popstate", () => activateView(window.location.hash.slice(1) || "dashboard"));
+  activateView(window.location.hash.slice(1) || "dashboard");
   document.getElementById("refresh-button").addEventListener("click", refreshDashboard);
   refreshDashboard();
   window.setInterval(refreshDashboard, 30000);
