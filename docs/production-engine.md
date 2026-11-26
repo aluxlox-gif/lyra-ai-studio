@@ -67,3 +67,11 @@ The token is a server-side secret. Do not place it in frontend JavaScript, a pub
 8. Phase 8: authenticated PWA and Telegram orchestration, observability, and release tests.
 
 Each provider must declare availability, requirements, license, network use, and cost. No provider may be represented as free or offline unless its actual execution path supports that claim.
+
+## Phase 2 status: deterministic Story Intelligence
+
+Implemented `POST /api/production/projects/{project_id}/story/review`. It accepts a structured story package with a logline, premise, protagonist goal, stakes, central conflict, and ordered scene beats. The evaluator reports a weighted score for opening hook, protagonist goal, stakes, central conflict, escalation, payoff, and pacing.
+
+This evaluator is deliberately labelled `deterministic_heuristic`. It checks explicit fields, beat markers, turning-point counts, and estimated runtime; it does not understand narrative meaning at an LLM level and must not be presented as an AI script doctor. It returns issues and concrete revision prompts to help the next story-authoring provider improve the draft.
+
+Story generation and LLM-based script review are not enabled yet. No paid API or remote model is called by this phase. The next step is to define a provider interface that can use a configured local model first, while keeping deterministic validation as a provider-independent gate.
