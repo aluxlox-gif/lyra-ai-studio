@@ -14,6 +14,7 @@ from pydantic import BaseModel, Field
 from app.engines.registry import get_engine_status
 from app.engines.adapters.hermes import HermesAdapter
 from app.engines.adapters.voicebox import VoiceboxAdapter
+from app.production.router import router as production_router
 
 APP_NAME = "LYRA AI STUDIO"
 APP_VERSION = "1.0.0"
@@ -251,6 +252,9 @@ async def status_endpoint():
         "backend": "online",
         "engines": get_engine_status()
     }
+
+
+app.include_router(production_router)
 
 
 if FRONTEND_DIR.exists():
