@@ -6,7 +6,7 @@ import os
 from fastapi import APIRouter, Header, HTTPException, status
 
 from app.production.schemas import ProjectCreate, ProjectRead, ProductionHealth
-from app.production.store import store
+from app.production.store import get_store
 
 router = APIRouter(prefix="/api/production", tags=["production"])
 
@@ -41,7 +41,7 @@ async def create_project(
     x_lyra_production_token: str | None = Header(default=None),
 ):
     _authorize(x_lyra_production_token)
-    return store.create_project(payload)
+    return get_store().create_project(payload)
 
 
 @router.get("/projects/{project_id}", response_model=ProjectRead)
@@ -50,7 +50,7 @@ async def get_project(
     x_lyra_production_token: str | None = Header(default=None),
 ):
     _authorize(x_lyra_production_token)
-    project = store.get_project(project_id)
+    project = get_store().get_project(project_id)
     if project is None:
         raise HTTPException(status_code=404, detail="production_project_not_found")
     return project
