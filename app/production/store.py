@@ -17,7 +17,8 @@ def _utc_now() -> str:
 
 
 def _database_path() -> Path:
-    configured = os.getenv("LYRA_PRODUCTION_DB_PATH", "data/production.sqlite3")
+    default_path = "/tmp/lyra-production.sqlite3" if os.getenv("VERCEL") else "data/production.sqlite3"
+    configured = os.getenv("LYRA_PRODUCTION_DB_PATH", default_path)
     path = Path(configured).expanduser()
     if not path.is_absolute():
         path = Path(__file__).resolve().parents[2] / path
@@ -129,4 +130,10 @@ class ProductionStore:
         return self._to_project(row) if row else None
 
 
-store = ProductionStore()
+from functools import lru_cache
+
+
+@lru_cache(maxsize=1)
+def get_store() -> ProductionStore:
+    """Initialize storage lazily so importing the FastAPI app has no disk side effects."""
+    return ProductionStore()
