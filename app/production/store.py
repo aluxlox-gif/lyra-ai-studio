@@ -5,6 +5,7 @@ import os
 import sqlite3
 import uuid
 from contextlib import contextmanager
+from functools import lru_cache
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterator
@@ -128,9 +129,6 @@ class ProductionStore:
                 "SELECT * FROM production_projects WHERE id = ?", (project_id,)
             ).fetchone()
         return self._to_project(row) if row else None
-
-
-from functools import lru_cache
 
 
 @lru_cache(maxsize=1)
