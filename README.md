@@ -87,6 +87,7 @@ The first production foundation is available under `/api/production`:
 - `GET /api/production/health` — reports implemented capabilities and explicitly reports that background workers are not enabled yet.
 - `POST /api/production/projects` — creates a persisted production project.
 - `GET /api/production/projects/{project_id}` — retrieves a project.
+- `POST /api/production/projects/{project_id}/story/review` — runs transparent, deterministic story-structure checks (not LLM generation).
 
 Project endpoints require the `X-Lyra-Production-Token` header, configured with `LYRA_PRODUCTION_API_TOKEN`. SQLite is used by default at `data/production.sqlite3` locally. Vercel falls back to `/tmp/lyra-production.sqlite3` to avoid writes into the read-only deployment bundle, but `/tmp` is ephemeral. Set `LYRA_PRODUCTION_DB_PATH` to a persistent mounted path on a host that supports durable volumes before relying on stored projects.
 
