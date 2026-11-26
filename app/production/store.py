@@ -4,9 +4,10 @@ import json
 import os
 import sqlite3
 import uuid
+from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Iterator
 
 from app.production.schemas import ProjectCreate, ProjectRead
 
@@ -30,11 +31,19 @@ class ProductionStore:
         self.database_path.parent.mkdir(parents=True, exist_ok=True)
         self.initialize()
 
-    def _connect(self) -> sqlite3.Connection:
+    @contextmanager
+    def _connect(self) -> Iterator[sqlite3.Connection]:
         connection = sqlite3.connect(self.database_path, timeout=10)
         connection.row_factory = sqlite3.Row
         connection.execute("PRAGMA foreign_keys = ON")
-        return connection
+        try:
+            yield connection
+            connection.commit()
+        except Exception:
+            connection.rollback()
+            raise
+        finally:
+            connection.close()
 
     def initialize(self) -> None:
         with self._connect() as connection:
