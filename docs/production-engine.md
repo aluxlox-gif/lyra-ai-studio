@@ -51,7 +51,7 @@ Example project payload:
 
 ## Storage and deployment boundary
 
-SQLite uses Python's standard library; no database server or paid API is required. The default database path is `data/production.sqlite3`. On a host with an ephemeral filesystem, data may disappear on restart or redeploy. Production deployment must configure a persistent volume/path before relying on stored projects. Do not assume serverless local disk is durable.
+SQLite uses Python's standard library; no database server or paid API is required. The default database path is `data/production.sqlite3` for local runs. On Vercel, the fallback path is `/tmp/lyra-production.sqlite3` so app import does not attempt to write into the read-only deployment bundle; `/tmp` is ephemeral and is not durable storage. Production deployment must configure a persistent volume/path before relying on stored projects. Do not assume serverless local disk is durable.
 
 The token is a server-side secret. Do not place it in frontend JavaScript, a public PWA bundle, Telegram messages, or a committed real environment file. A later client integration must use a suitable authenticated backend/session flow rather than exposing this shared token.
 
