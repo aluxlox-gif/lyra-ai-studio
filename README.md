@@ -88,7 +88,7 @@ The first production foundation is available under `/api/production`:
 - `POST /api/production/projects` — creates a persisted production project.
 - `GET /api/production/projects/{project_id}` — retrieves a project.
 
-Project endpoints require the `X-Lyra-Production-Token` header, configured with `LYRA_PRODUCTION_API_TOKEN`. SQLite is used by default at `data/production.sqlite3`; set `LYRA_PRODUCTION_DB_PATH` to a persistent mounted path on hosting platforms. Ephemeral serverless filesystems are not durable storage.
+Project endpoints require the `X-Lyra-Production-Token` header, configured with `LYRA_PRODUCTION_API_TOKEN`. SQLite is used by default at `data/production.sqlite3` locally. Vercel falls back to `/tmp/lyra-production.sqlite3` to avoid writes into the read-only deployment bundle, but `/tmp` is ephemeral. Set `LYRA_PRODUCTION_DB_PATH` to a persistent mounted path on a host that supports durable volumes before relying on stored projects.
 
 This phase establishes project contracts and persistence only. It does not yet generate scripts, images, narration, or video, and it does not run background jobs. Existing Voicebox, Hermes, Telegram, and frontend flows remain separate and unchanged.
 
