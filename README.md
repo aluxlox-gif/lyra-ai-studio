@@ -79,3 +79,17 @@ explicitly provides private network access between them.
 The image/video providers must be selected and configured before those prompt
 types can return actual media files in Telegram. Hermes remains deferred until
 the base Telegram workflows are verified.
+
+## Cinematic Production Foundation (Phase 1)
+
+The first production foundation is available under `/api/production`:
+
+- `GET /api/production/health` — reports implemented capabilities and explicitly reports that background workers are not enabled yet.
+- `POST /api/production/projects` — creates a persisted production project.
+- `GET /api/production/projects/{project_id}` — retrieves a project.
+
+Project endpoints require the `X-Lyra-Production-Token` header, configured with `LYRA_PRODUCTION_API_TOKEN`. SQLite is used by default at `data/production.sqlite3`; set `LYRA_PRODUCTION_DB_PATH` to a persistent mounted path on hosting platforms. Ephemeral serverless filesystems are not durable storage.
+
+This phase establishes project contracts and persistence only. It does not yet generate scripts, images, narration, or video, and it does not run background jobs. Existing Voicebox, Hermes, Telegram, and frontend flows remain separate and unchanged.
+
+See [docs/production-engine.md](docs/production-engine.md) for the implementation boundary and next phases.
